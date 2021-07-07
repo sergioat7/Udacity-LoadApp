@@ -16,5 +16,8 @@ class DetailActivity : AppCompatActivity() {
             NotificationManager::class.java
         )
         notificationManager.cancelAll()
+
+        val repository = intent.getStringExtra("repository")
+        val status = intent.getStringExtra("status")
     }
 }

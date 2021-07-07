@@ -20,7 +20,9 @@ import kotlinx.android.synthetic.main.content_main.*
 
 class MainActivity : AppCompatActivity() {
 
-    private var downloadID: Long = 0
+    private var glideDownloadID: Long = 0
+    private var loadAppDownloadID: Long = 0
+    private var retrofitDownloadID: Long = 0
 
     private lateinit var notificationManager: NotificationManager
     private lateinit var pendingIntent: PendingIntent
@@ -31,6 +33,10 @@ class MainActivity : AppCompatActivity() {
         private const val CHANNEL_ID = "files_channel"
         private const val CHANNEL_NAME = "Files"
         private const val NOTIFICATION_ID = 0
+        private const val GLIDE_URL = "https://github.com/bumptech/glide/archive/master.zip"
+        private const val LOADAPP_URL =
+            "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter/archive/master.zip"
+        private const val RETROFIT_URL = "https://github.com/square/retrofit/archive/master.zip"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,17 +49,6 @@ class MainActivity : AppCompatActivity() {
         notificationManager = getSystemService(
             NotificationManager::class.java
         )
-        pendingIntent = PendingIntent.getActivity(
-            applicationContext,
-            NOTIFICATION_ID,
-            Intent(this, DetailActivity::class.java),
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
-        action = NotificationCompat.Action(
-            R.drawable.ic_assistant_black_24dp,
-            getString(R.string.notification_button),
-            pendingIntent
-        )
 
         createChannel(
             CHANNEL_ID,
@@ -61,16 +56,15 @@ class MainActivity : AppCompatActivity() {
         )
 
         radioButton.setOnClickListener {
-            url = "https://github.com/bumptech/glide/archive/master.zip"
+            url = GLIDE_URL
         }
 
         radioButton2.setOnClickListener {
-            url =
-                "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter/archive/master.zip"
+            url = LOADAPP_URL
         }
 
         radioButton3.setOnClickListener {
-            url = "https://github.com/square/retrofit/archive/master.zip"
+            url = RETROFIT_URL
         }
 
         custom_button.setOnClickListener {
@@ -78,7 +72,13 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, getString(R.string.not_file_selected), Toast.LENGTH_LONG)
                     .show()
             } else {
-                download()
+                val downloadID = download()
+                when (url) {
+                    GLIDE_URL -> glideDownloadID = downloadID
+                    LOADAPP_URL -> loadAppDownloadID = downloadID
+                    RETROFIT_URL -> retrofitDownloadID = downloadID
+                    else -> Unit
+                }
             }
         }
     }
@@ -86,7 +86,31 @@ class MainActivity : AppCompatActivity() {
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
+            val repository = when (id) {
+                glideDownloadID -> getString(R.string.description_glide_url)
+                loadAppDownloadID -> getString(R.string.description_loadapp_url)
+                retrofitDownloadID -> getString(R.string.description_retrofit_url)
+                else -> ""
+            }
+            val status = when (intent?.getIntExtra(DownloadManager.COLUMN_STATUS, -1)) {
+                DownloadManager.STATUS_SUCCESSFUL -> "Successful"
+                else -> "Failure"
+            }
 
+            val detailIntent = Intent(context, DetailActivity::class.java)
+            detailIntent.putExtra("repository", repository)
+            detailIntent.putExtra("status", status)
+            pendingIntent = PendingIntent.getActivity(
+                applicationContext,
+                NOTIFICATION_ID,
+                detailIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT
+            )
+            action = NotificationCompat.Action(
+                R.drawable.ic_assistant_black_24dp,
+                getString(R.string.notification_button),
+                pendingIntent
+            )
             sendNotification(
                 getString(R.string.notification_description),
                 context!!
@@ -94,7 +118,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun download() {
+    private fun download(): Long {
         val request =
             DownloadManager.Request(Uri.parse(url))
                 .setTitle(getString(R.string.app_name))
@@ -104,8 +128,7 @@ class MainActivity : AppCompatActivity() {
                 .setAllowedOverRoaming(true)
 
         val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
-        downloadID =
-            downloadManager.enqueue(request)// enqueue puts the download request in the queue.
+        return downloadManager.enqueue(request)// enqueue puts the download request in the queue.
     }
 
     private fun createChannel(channelId: String, channelName: String) {
