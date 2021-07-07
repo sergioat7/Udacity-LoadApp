@@ -12,6 +12,7 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import kotlinx.android.synthetic.main.activity_main.*
@@ -24,10 +25,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var notificationManager: NotificationManager
     private lateinit var pendingIntent: PendingIntent
     private lateinit var action: NotificationCompat.Action
+    private var url: String? = null
 
     companion object {
-        private const val URL =
-            "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter/archive/master.zip"
         private const val CHANNEL_ID = "files_channel"
         private const val CHANNEL_NAME = "Files"
         private const val NOTIFICATION_ID = 0
@@ -60,8 +60,26 @@ class MainActivity : AppCompatActivity() {
             CHANNEL_NAME
         )
 
+        radioButton.setOnClickListener {
+            url = "https://github.com/bumptech/glide/archive/master.zip"
+        }
+
+        radioButton2.setOnClickListener {
+            url =
+                "https://github.com/udacity/nd940-c3-advanced-android-programming-project-starter/archive/master.zip"
+        }
+
+        radioButton3.setOnClickListener {
+            url = "https://github.com/square/retrofit/archive/master.zip"
+        }
+
         custom_button.setOnClickListener {
-            download()
+            if (url == null) {
+                Toast.makeText(this, getString(R.string.not_file_selected), Toast.LENGTH_LONG)
+                    .show()
+            } else {
+                download()
+            }
         }
     }
 
@@ -78,7 +96,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun download() {
         val request =
-            DownloadManager.Request(Uri.parse(URL))
+            DownloadManager.Request(Uri.parse(url))
                 .setTitle(getString(R.string.app_name))
                 .setDescription(getString(R.string.app_description))
                 .setRequiresCharging(false)

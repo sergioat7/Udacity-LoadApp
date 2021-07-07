@@ -7,7 +7,12 @@
     <string name="notification_description">The Project 3 repository is downloaded</string>
     <string name="notification_button">See changes</string>
 
+    <string name="description_glide_url">Glide - Image Loading Library by BumpTech</string>
+    <string name="description_loadapp_url">LoadApp - Current repository by Udacity</string>
+    <string name="description_retrofit_url">Retrofit - Type-safe HTTP client for Android and Java by Square, Inc</string>
+
     <string name="button_name">Click me</string>
     <string name="button_loading">We are loading </string>
+    <string name="not_file_selected">Please select file to download</string>
     <string name="title_activity_detail">DetailActivity</string>
 </resources>
