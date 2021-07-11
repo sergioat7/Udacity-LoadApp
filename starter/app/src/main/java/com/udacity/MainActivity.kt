@@ -72,6 +72,7 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, getString(R.string.not_file_selected), Toast.LENGTH_LONG)
                     .show()
             } else {
+                (it as LoadingButton).buttonState = ButtonState.Loading
                 val downloadID = download()
                 when (url) {
                     GLIDE_URL -> glideDownloadID = downloadID
@@ -85,8 +86,8 @@ class MainActivity : AppCompatActivity() {
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
-            val repository = when (id) {
+
+            val repository = when (intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)) {
                 glideDownloadID -> getString(R.string.description_glide_url)
                 loadAppDownloadID -> getString(R.string.description_loadapp_url)
                 retrofitDownloadID -> getString(R.string.description_retrofit_url)
@@ -96,6 +97,8 @@ class MainActivity : AppCompatActivity() {
                 DownloadManager.STATUS_SUCCESSFUL -> "Successful"
                 else -> "Failure"
             }
+
+            (custom_button as LoadingButton).buttonState = ButtonState.Completed
 
             val detailIntent = Intent(context, DetailActivity::class.java)
             detailIntent.putExtra("repository", repository)
