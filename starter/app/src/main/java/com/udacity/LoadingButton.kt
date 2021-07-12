@@ -21,6 +21,7 @@ class LoadingButton @JvmOverloads constructor(
     private var textCompleted: String? = null
     private var color: Int = 0
     private var text: String = ""
+    private var sweepAngle = 0F
 
     private val colorPaint = Paint().apply {
         style = Paint.Style.FILL
@@ -30,6 +31,9 @@ class LoadingButton @JvmOverloads constructor(
         textAlign = Paint.Align.CENTER
         textSize = context.resources.getDimension(R.dimen.default_text_size)
     }
+    private val circlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = context.getColor(R.color.colorAccent)
+    }
 
     private val valueAnimator = ValueAnimator()
 
@@ -38,11 +42,12 @@ class LoadingButton @JvmOverloads constructor(
             ButtonState.Loading -> {
                 color = colorLoading
                 text = textLoading ?: ""
-                //TODO: show circle animation
+                sweepAngle = 90F
             }
             ButtonState.Completed -> {
                 color = colorCompleted
                 text = textCompleted ?: ""
+                sweepAngle = 0F
             }
             else -> Unit
         }
@@ -58,6 +63,7 @@ class LoadingButton @JvmOverloads constructor(
         }
         color = colorCompleted
         text = textCompleted ?: ""
+        sweepAngle = 0F
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -75,6 +81,17 @@ class LoadingButton @JvmOverloads constructor(
                 widthSize.toFloat() / 2,
                 heightSize.toFloat() / 2 + textOffset,
                 textPaint
+            )
+
+            canvas.drawArc(
+                2 * widthSize.toFloat() / 3,
+                heightSize.toFloat() / 2 - circleRadius,
+                circleRadius * 2 + 2 * widthSize.toFloat() / 3,
+                circleRadius + heightSize.toFloat() / 2,
+                0F,
+                sweepAngle,
+                true,
+                circlePaint
             )
         }
     }
