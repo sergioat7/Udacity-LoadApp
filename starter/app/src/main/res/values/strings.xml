@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">LoadApp</string>
+    <string name="ok">OK</string>
     <string name="app_description">Download files from Internet</string>
     <string name="action_settings">Settings</string>
 
@@ -10,6 +11,9 @@
     <string name="description_glide_url">Glide - Image Loading Library by BumpTech</string>
     <string name="description_loadapp_url">LoadApp - Current repository by Udacity</string>
     <string name="description_retrofit_url">Retrofit - Type-safe HTTP client for Android and Java by Square, Inc</string>
+
+    <string name="file_name_title">File name:</string>
+    <string name="status_title">Status:</string>
 
     <string name="button_name">Click me</string>
     <string name="button_loading">We are loading </string>

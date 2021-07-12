@@ -4,6 +4,7 @@ import android.app.NotificationManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_detail.*
+import kotlinx.android.synthetic.main.content_detail.*
 
 class DetailActivity : AppCompatActivity() {
 
@@ -17,7 +18,10 @@ class DetailActivity : AppCompatActivity() {
         )
         notificationManager.cancelAll()
 
-        val repository = intent.getStringExtra("repository")
-        val status = intent.getStringExtra("status")
+        textViewFilename.text = intent.getStringExtra("repository")
+        textViewStatus.text = intent.getStringExtra("status")
+        button.setOnClickListener {
+            onBackPressed()
+        }
     }
 }
