@@ -1,12 +1,13 @@
 package com.udacity
 
-import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
 import kotlin.properties.Delegates
+
+private const val INCREMENT = 0.05
 
 class LoadingButton @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -19,9 +20,8 @@ class LoadingButton @JvmOverloads constructor(
     private var colorCompleted: Int = 0
     private var textLoading: String? = null
     private var textCompleted: String? = null
-    private var color: Int = 0
     private var text: String = ""
-    private var sweepAngle = 0F
+    private var progress = 0.0
 
     private val colorPaint = Paint().apply {
         style = Paint.Style.FILL
@@ -35,19 +35,15 @@ class LoadingButton @JvmOverloads constructor(
         color = context.getColor(R.color.colorAccent)
     }
 
-    private val valueAnimator = ValueAnimator()
-
     var buttonState: ButtonState by Delegates.observable<ButtonState>(ButtonState.Completed) { p, old, new ->
         when (new) {
             ButtonState.Loading -> {
-                color = colorLoading
                 text = textLoading ?: ""
-                sweepAngle = 90F
+                progress = INCREMENT
             }
             ButtonState.Completed -> {
-                color = colorCompleted
                 text = textCompleted ?: ""
-                sweepAngle = 0F
+                progress = 0.0
             }
             else -> Unit
         }
@@ -61,18 +57,24 @@ class LoadingButton @JvmOverloads constructor(
             textLoading = getString(R.styleable.LoadingButton_textLoading)
             textCompleted = getString(R.styleable.LoadingButton_textCompleted)
         }
-        color = colorCompleted
         text = textCompleted ?: ""
-        sweepAngle = 0F
+        progress = 0.0
     }
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         canvas?.let {
 
-            colorPaint.color = color
-            canvas.drawRect(0F, 0F, widthSize.toFloat(), heightSize.toFloat(), colorPaint)
-            canvas.drawColor(color)
+            canvas.drawColor(colorCompleted)
+
+            colorPaint.color = colorLoading
+            canvas.drawRect(
+                0F,
+                0F,
+                widthSize.toFloat() * progress.toFloat(),
+                heightSize.toFloat(),
+                colorPaint
+            )
 
             val textHeight = textPaint.descent() - textPaint.ascent()
             val textOffset = textHeight / 2 - textPaint.descent()
@@ -83,16 +85,23 @@ class LoadingButton @JvmOverloads constructor(
                 textPaint
             )
 
+            val arcX = 3 * widthSize.toFloat() / 4
+            val arcY = heightSize.toFloat() / 2
             canvas.drawArc(
-                2 * widthSize.toFloat() / 3,
-                heightSize.toFloat() / 2 - circleRadius,
-                circleRadius * 2 + 2 * widthSize.toFloat() / 3,
-                circleRadius + heightSize.toFloat() / 2,
+                arcX,
+                arcY - circleRadius,
+                circleRadius * 2 + arcX,
+                circleRadius + arcY,
                 0F,
-                sweepAngle,
+                360F * progress.toFloat(),
                 true,
                 circlePaint
             )
+
+            if (progress > 0 && progress < 1) {
+                progress += INCREMENT
+                invalidate()
+            }
         }
     }
 
