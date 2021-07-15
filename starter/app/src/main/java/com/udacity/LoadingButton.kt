@@ -1,5 +1,8 @@
 package com.udacity
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
@@ -7,7 +10,6 @@ import android.util.AttributeSet
 import android.view.View
 import kotlin.properties.Delegates
 
-private const val INCREMENT = 0.05
 
 class LoadingButton @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -21,7 +23,7 @@ class LoadingButton @JvmOverloads constructor(
     private var textLoading: String? = null
     private var textCompleted: String? = null
     private var text: String = ""
-    private var progress = 0.0
+    private var progress = 0.0F
 
     private val colorPaint = Paint().apply {
         style = Paint.Style.FILL
@@ -35,15 +37,39 @@ class LoadingButton @JvmOverloads constructor(
         color = context.getColor(R.color.colorAccent)
     }
 
-    var buttonState: ButtonState by Delegates.observable<ButtonState>(ButtonState.Completed) { p, old, new ->
+    private var valueAnimator = ValueAnimator()
+
+    var buttonState: ButtonState by Delegates.observable<ButtonState>(ButtonState.Completed) { _, _, new ->
         when (new) {
             ButtonState.Loading -> {
                 text = textLoading ?: ""
-                progress = INCREMENT
+                valueAnimator = ValueAnimator.ofFloat(0F, 1F).apply {
+                    duration = 3000L
+                    repeatCount = ValueAnimator.INFINITE
+                    addUpdateListener {
+                        progress = it.animatedValue as Float
+                        invalidate()
+                    }
+                    start()
+                }
             }
             ButtonState.Completed -> {
-                text = textCompleted ?: ""
-                progress = 0.0
+                valueAnimator.cancel()
+                valueAnimator = ValueAnimator.ofFloat(progress, 1F).apply {
+                    duration = 1000L
+                    addUpdateListener {
+                        progress = it.animatedValue as Float
+                        invalidate()
+                    }
+                    addListener(object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator) {
+                            text = textCompleted ?: ""
+                            progress = 0.0F
+                            invalidate()
+                        }
+                    })
+                    start()
+                }
             }
             else -> Unit
         }
@@ -58,7 +84,7 @@ class LoadingButton @JvmOverloads constructor(
             textCompleted = getString(R.styleable.LoadingButton_textCompleted)
         }
         text = textCompleted ?: ""
-        progress = 0.0
+        progress = 0.0F
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -71,7 +97,7 @@ class LoadingButton @JvmOverloads constructor(
             canvas.drawRect(
                 0F,
                 0F,
-                widthSize.toFloat() * progress.toFloat(),
+                widthSize.toFloat() * progress,
                 heightSize.toFloat(),
                 colorPaint
             )
@@ -93,15 +119,10 @@ class LoadingButton @JvmOverloads constructor(
                 circleRadius * 2 + arcX,
                 circleRadius + arcY,
                 0F,
-                360F * progress.toFloat(),
+                360F * progress,
                 true,
                 circlePaint
             )
-
-            if (progress > 0 && progress < 1) {
-                progress += INCREMENT
-                invalidate()
-            }
         }
     }
 
